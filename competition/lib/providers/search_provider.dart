@@ -1,8 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/competition.dart';
 import '../models/team.dart';
 import '../models/player.dart';
 import '../services/api_service.dart';
+import '../providers/favorites_provider.dart';
+import '../main.dart';
 
 enum SearchType { competition, team, player }
 
@@ -126,6 +130,38 @@ class SearchProvider with ChangeNotifier {
   // Alias for getTeamDetails to fix the error in team_details_screen.dart
   Future<Team> getTeam(int id) async {
     return await getTeamDetails(id);
+  }
+  
+  // Méthode pour obtenir toutes les équipes pour la carte, y compris les favoris
+  Future<List<Team>> getAllTeamsForMap() async {
+    try {
+      // Obtenir les équipes françaises de base
+      final List<Team> teamsWithLocations = await _apiService.getTeamsWithLocations();
+      
+      // Vérifier si le contexte est disponible
+      if (navigatorKey.currentContext != null) {
+        // Obtenir les équipes favorites
+        final favoritesProvider = Provider.of<FavoritesProvider>(navigatorKey.currentContext!, listen: false);
+        final List<Team> favoriteTeams = favoritesProvider.favoriteTeams;
+        
+        // Ajouter les équipes favorites qui ne sont pas déjà dans la liste
+        for (final favoriteTeam in favoriteTeams) {
+          // Vérifier si l'équipe favorite a des coordonnées
+          if (favoriteTeam.latitude != null && favoriteTeam.longitude != null) {
+            // Vérifier si l'équipe n'est pas déjà dans la liste
+            if (!teamsWithLocations.any((team) => team.id == favoriteTeam.id)) {
+              teamsWithLocations.add(favoriteTeam);
+            }
+          }
+        }
+      }
+      
+      return teamsWithLocations;
+    } catch (e) {
+      _errorMessage = 'Error loading teams: ${e.toString()}';
+      debugPrint(_errorMessage);
+      return [];
+    }
   }
   
   // Get players for a team

@@ -47,6 +47,7 @@ dependencies:
   # For beautiful UI components
   flutter_svg: ^2.0.7
   shimmer: ^3.0.0
+  geocoding: ^3.0.0
 
 dev_dependencies:
   flutter_test:

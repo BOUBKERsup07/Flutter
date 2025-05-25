@@ -62,40 +62,6 @@ class Team {
     };
   }
   
-  // Convertir l'objet Team en Map pour la base de données
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'tla': tla,
-      'crest': crest,
-      'address': address,
-      'website': website,
-      'founded': founded,
-      'clubColors': clubColors,
-      'venue': venue,
-      'latitude': latitude,
-      'longitude': longitude,
-    };
-  }
-  
-  // Créer une Team à partir d'un Map (pour la base de données)
-  factory Team.fromMap(Map<String, dynamic> map) {
-    return Team(
-      id: map['id'],
-      name: map['name'] ?? 'Unknown',
-      tla: map['tla'] ?? 'UNK',
-      crest: map['crest'],
-      address: map['address'],
-      website: map['website'],
-      founded: map['founded'],
-      clubColors: map['clubColors'],
-      venue: map['venue'],
-      latitude: map['latitude'] != null ? (map['latitude'] is double ? map['latitude'] : double.parse(map['latitude'].toString())) : null,
-      longitude: map['longitude'] != null ? (map['longitude'] is double ? map['longitude'] : double.parse(map['longitude'].toString())) : null,
-    );
-  }
-  
   // Créer une copie de l'équipe avec des coordonnées valides
   Future<Team> withValidCoordinatesAsync() async {
     // Si l'équipe a déjà des coordonnées valides, la retourner telle quelle

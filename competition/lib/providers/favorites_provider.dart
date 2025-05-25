@@ -31,7 +31,19 @@ class FavoritesProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _favoriteTeams = await _databaseHelper.getFavoriteTeams();
+      // Charger les équipes favorites depuis la base de données
+      List<Team> teams = await _databaseHelper.getFavoriteTeams();
+      
+      // S'assurer que toutes les équipes ont des coordonnées valides en utilisant le géocodage
+      List<Team> teamsWithCoordinates = [];
+      for (var team in teams) {
+        // Utiliser la méthode asynchrone pour obtenir des coordonnées précises
+        Team teamWithCoordinates = await team.withValidCoordinatesAsync();
+        teamsWithCoordinates.add(teamWithCoordinates);
+      }
+      _favoriteTeams = teamsWithCoordinates;
+      
+      // Charger les joueurs favoris
       _favoritePlayers = await _databaseHelper.getFavoritePlayers();
     } catch (e) {
       debugPrint('Error loading favorites: $e');
@@ -44,8 +56,16 @@ class FavoritesProvider with ChangeNotifier {
   // Team operations
   Future<void> addFavoriteTeam(Team team) async {
     try {
-      await _databaseHelper.insertFavoriteTeam(team);
-      _favoriteTeams.add(team);
+      // S'assurer que l'équipe a des coordonnées valides pour la carte
+      // Utiliser la méthode asynchrone pour obtenir des coordonnées précises via géocodage
+      final teamWithCoordinates = await team.withValidCoordinatesAsync();
+      
+      // Insérer l'équipe avec coordonnées dans la base de données
+      await _databaseHelper.insertFavoriteTeam(teamWithCoordinates);
+      
+      // Ajouter à la liste en mémoire
+      _favoriteTeams.add(teamWithCoordinates);
+      
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding favorite team: $e');

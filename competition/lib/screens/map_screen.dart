@@ -26,13 +26,48 @@ class _MapScreenState extends State<MapScreen> {
   static const LatLng _defaultPosition = LatLng(46.603354, 1.888334);
   double _currentZoom = 5.5;
 
+  // Variable pour suivre si le widget est actif
+  bool _isActive = false;
+  
   @override
   void initState() {
     super.initState();
+    _isActive = true;
     _loadTeamLocations();
   }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // S'assurer que nous n'ajoutons l'écouteur qu'une seule fois
+    if (_isActive) {
+      // Utiliser didChangeDependencies au lieu de WidgetsBinding.instance.addPostFrameCallback
+      // pour éviter les problèmes de cycle de vie
+      final favoritesProvider = Provider.of<FavoritesProvider>(context, listen: true);
+      // Au lieu d'utiliser un listener, nous allons réagir aux changements via le provider
+      // Cela évite les problèmes de cycle de vie
+      if (!favoritesProvider.isLoading && mounted) {
+        // Recharger les marqueurs uniquement si nous ne sommes pas déjà en train de charger
+        if (!_isLoading) {
+          _loadTeamLocations();
+        }
+      }
+    }
+  }
+  
+  @override
+  void dispose() {
+    _isActive = false;
+    super.dispose();
+  }
+  
+  // Cette méthode a été supprimée car nous utilisons maintenant didChangeDependencies
+  // pour réagir aux changements dans les favoris
 
   Future<void> _loadTeamLocations() async {
+    // Vérifier si le widget est toujours monté
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
       _errorMessage = '';
@@ -41,9 +76,13 @@ class _MapScreenState extends State<MapScreen> {
     });
 
     try {
-      // Use the API method to get teams with location data
+      // Utiliser la nouvelle méthode qui récupère toutes les équipes, y compris les favoris
+      if (!mounted) return;
       final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-      final teams = await searchProvider.getTeamsWithLocations();
+      final teams = await searchProvider.getAllTeamsForMap();
+      
+      // Vérifier à nouveau si le widget est monté après l'opération asynchrone
+      if (!mounted) return;
       
       // Add markers for teams with location data
       _addTeamMarkers(teams);
@@ -51,13 +90,16 @@ class _MapScreenState extends State<MapScreen> {
       // Centrer la carte sur la France pour voir toutes les équipes
       _moveMap(_defaultPosition);
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -345,10 +387,55 @@ class _MapScreenState extends State<MapScreen> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _moveMap(_defaultPosition),
-        backgroundColor: AppTheme.primaryColor,
-        child: const Icon(Icons.my_location),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Bouton de zoom +
+          FloatingActionButton(
+            heroTag: 'zoomIn',
+            mini: true,
+            onPressed: () {
+              final newZoom = _currentZoom + 1.0;
+              if (newZoom <= 19.0) { // Limiter le zoom maximum
+                setState(() {
+                  _currentZoom = newZoom;
+                });
+                _mapController.move(_mapController.camera.center, _currentZoom);
+              }
+            },
+            backgroundColor: Colors.white,
+            foregroundColor: AppTheme.primaryColor,
+            child: const Icon(Icons.add),
+          ),
+          const SizedBox(height: 8),
+          // Bouton de zoom -
+          FloatingActionButton(
+            heroTag: 'zoomOut',
+            mini: true,
+            onPressed: () {
+              final newZoom = _currentZoom - 1.0;
+              if (newZoom >= 3.0) { // Limiter le zoom minimum
+                setState(() {
+                  _currentZoom = newZoom;
+                });
+                _mapController.move(_mapController.camera.center, _currentZoom);
+              }
+            },
+            backgroundColor: Colors.white,
+            foregroundColor: AppTheme.primaryColor,
+            child: const Icon(Icons.remove),
+          ),
+          const SizedBox(height: 16),
+          // Bouton pour recentrer la carte
+          FloatingActionButton(
+            heroTag: 'center',
+            onPressed: () => _moveMap(_defaultPosition),
+            backgroundColor: AppTheme.primaryColor,
+            child: const Icon(Icons.my_location),
+          ),
+        ],
       ),
     );
   }

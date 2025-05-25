@@ -5,6 +5,7 @@ import 'favorites_screen.dart';
 import 'map_screen.dart';
 import '../providers/favorites_provider.dart';
 import '../services/api_service.dart';
+import '../utils/app_theme.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -56,18 +57,33 @@ class _HomeScreenState extends State<HomeScreen> {
             _selectedIndex = index;
           });
         },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppTheme.backgroundColor,
+        selectedItemColor: AppTheme.primaryColor,
+        unselectedItemColor: AppTheme.textSecondaryColor,
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 12,
+        ),
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
+            icon: Icon(Icons.search_rounded),
+            activeIcon: Icon(Icons.search_rounded),
+            label: 'Recherche',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
+            icon: Icon(Icons.favorite_border_rounded),
+            activeIcon: Icon(Icons.favorite_rounded),
+            label: 'Favoris',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Map',
+            icon: Icon(Icons.map_outlined),
+            activeIcon: Icon(Icons.map_rounded),
+            label: 'Carte',
           ),
         ],
       ),

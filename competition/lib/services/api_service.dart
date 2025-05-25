@@ -202,8 +202,9 @@ class ApiService {
   // Données de secours pour les équipes
   List<Team> _getFallbackTeams() {
     return [
+      // Équipes de Ligue 1 (France)
       Team(
-        id: 1,
+        id: 524,  // ID réel du PSG dans l'API football-data.org
         name: 'Paris Saint-Germain',
         tla: 'PSG',
         crest: 'https://crests.football-data.org/524.png',
@@ -215,7 +216,7 @@ class ApiService {
         longitude: 2.2530,
       ),
       Team(
-        id: 2,
+        id: 516,  // ID réel de l'OM dans l'API football-data.org
         name: 'Olympique de Marseille',
         tla: 'OM',
         crest: 'https://crests.football-data.org/516.png',
@@ -227,7 +228,7 @@ class ApiService {
         longitude: 5.3950,
       ),
       Team(
-        id: 3,
+        id: 523,  // ID réel de l'OL dans l'API football-data.org
         name: 'Olympique Lyonnais',
         tla: 'OL',
         crest: 'https://crests.football-data.org/523.png',
@@ -239,7 +240,7 @@ class ApiService {
         longitude: 4.9822,
       ),
       Team(
-        id: 4,
+        id: 548,  // ID réel de l'AS Monaco dans l'API football-data.org
         name: 'AS Monaco',
         tla: 'ASM',
         crest: 'https://crests.football-data.org/548.png',
@@ -251,7 +252,7 @@ class ApiService {
         longitude: 7.4154,
       ),
       Team(
-        id: 5,
+        id: 521,  // ID réel du LOSC Lille dans l'API football-data.org
         name: 'LOSC Lille',
         tla: 'LIL',
         crest: 'https://crests.football-data.org/521.png',
@@ -261,6 +262,68 @@ class ApiService {
         address: 'Lille, France',
         latitude: 50.6119,
         longitude: 3.1301,
+      ),
+      
+      // Équipes du Championship (Angleterre)
+      Team(
+        id: 343,  // Norwich City
+        name: 'Norwich City FC',
+        tla: 'NOR',
+        crest: 'https://crests.football-data.org/68.png',
+        venue: 'Carrow Road',
+        founded: 1902,
+        clubColors: 'Yellow, Green',
+        address: 'Norwich, England',
+        latitude: 52.6225,
+        longitude: 1.3091,
+      ),
+      Team(
+        id: 341,  // Leeds United
+        name: 'Leeds United FC',
+        tla: 'LEE',
+        crest: 'https://crests.football-data.org/341.png',
+        venue: 'Elland Road',
+        founded: 1919,
+        clubColors: 'White, Blue',
+        address: 'Leeds, England',
+        latitude: 53.7772,
+        longitude: -1.5724,
+      ),
+      Team(
+        id: 356,  // Sheffield United
+        name: 'Sheffield United FC',
+        tla: 'SHU',
+        crest: 'https://crests.football-data.org/356.png',
+        venue: 'Bramall Lane',
+        founded: 1889,
+        clubColors: 'Red, White',
+        address: 'Sheffield, England',
+        latitude: 53.3703,
+        longitude: -1.4705,
+      ),
+      Team(
+        id: 384,  // Middlesbrough
+        name: 'Middlesbrough FC',
+        tla: 'MID',
+        crest: 'https://crests.football-data.org/384.png',
+        venue: 'Riverside Stadium',
+        founded: 1876,
+        clubColors: 'Red, White',
+        address: 'Middlesbrough, England',
+        latitude: 54.5779,
+        longitude: -1.2166,
+      ),
+      Team(
+        id: 387,  // Bristol City
+        name: 'Bristol City FC',
+        tla: 'BRI',
+        crest: 'https://crests.football-data.org/387.png',
+        venue: 'Ashton Gate',
+        founded: 1894,
+        clubColors: 'Red, White',
+        address: 'Bristol, England',
+        latitude: 51.4400,
+        longitude: -2.6206,
       ),
     ];
   }
@@ -275,9 +338,21 @@ class ApiService {
         return allTeams;
       }
       
-      // Filtrer les équipes par nom
-      return allTeams.where((team) => 
-        team.name.toLowerCase().contains(query.toLowerCase())).toList();
+      // Convertir la requête en minuscules pour une recherche insensible à la casse
+      final queryLower = query.toLowerCase();
+      
+      // Filtrer les équipes par nom ou par TLA (code d'équipe)
+      return allTeams.where((team) {
+        final nameLower = team.name.toLowerCase();
+        final tlaLower = team.tla.toLowerCase();
+        
+        // Vérifier si le nom ou le TLA contient la requête
+        // Ou si le nom contient des mots qui commencent par la requête
+        return nameLower.contains(queryLower) || 
+               tlaLower.contains(queryLower) ||
+               // Recherche par mot-clé (ex: "real" doit trouver "Real Madrid")
+               nameLower.split(' ').any((word) => word.startsWith(queryLower));
+      }).toList();
     } catch (e) {
       // En cas d'erreur, retourner une liste vide plutôt qu'une erreur
       return [];
@@ -318,17 +393,14 @@ class ApiService {
     // Récupérer toutes les équipes de secours
     final teams = _getFallbackTeams();
     
-    // Vérifier si l'ID est valide pour nos équipes de secours
-    if (id >= 1 && id <= 5) {
-      // Rechercher l'équipe avec l'ID exact
-      final exactMatch = teams.where((team) => team.id == id).toList();
-      if (exactMatch.isNotEmpty) {
-        return exactMatch.first;
-      }
+    // Rechercher l'équipe avec l'ID exact dans notre liste
+    final exactMatch = teams.where((team) => team.id == id).toList();
+    if (exactMatch.isNotEmpty) {
+      return exactMatch.first;
     }
     
-    // Si l'ID ne correspond à aucune équipe de secours ou est invalide, utiliser PSG par défaut
-    return teams.first; // Paris Saint-Germain (id: 1)
+    // Si l'ID ne correspond à aucune équipe de secours, utiliser PSG par défaut
+    return teams.first; // Paris Saint-Germain (id: 524)
   }
 
   // Get players for a specific team
@@ -375,13 +447,13 @@ class ApiService {
     }
     
     // Si l'ID n'est pas dans nos équipes de secours, utiliser PSG par défaut
-    if (teamId > 5 || teamId < 1) {
-      teamId = 1;
+    if (!_getFallbackTeams().any((team) => team.id == teamId)) {
+      teamId = 524; // ID réel du PSG
       teamName = 'Paris Saint-Germain';
     }
     
     // Joueurs pour PSG
-    if (teamId == 1) {
+    if (teamId == 524) {
       return [
         Player(
           id: 101,
@@ -419,7 +491,7 @@ class ApiService {
       ];
     }
     // Joueurs pour OM
-    else if (teamId == 2) {
+    else if (teamId == 516) {
       return [
         Player(
           id: 201,
@@ -457,7 +529,7 @@ class ApiService {
       ];
     }
     // Joueurs pour Lyon (OL)
-    else if (teamId == 3) {
+    else if (teamId == 523) {
       return [
         Player(
           id: 301,
@@ -495,7 +567,7 @@ class ApiService {
       ];
     }
     // Joueurs pour Monaco (ASM)
-    else if (teamId == 4) {
+    else if (teamId == 548) {
       return [
         Player(
           id: 401,
@@ -522,7 +594,7 @@ class ApiService {
       ];
     }
     // Joueurs pour Lille (LOSC)
-    else if (teamId == 5) {
+    else if (teamId == 521) {
       return [
         Player(
           id: 501,
@@ -545,6 +617,196 @@ class ApiService {
           teamId: teamId,
           teamName: teamName,
           imageUrl: 'https://img.a.transfermarkt.technology/portrait/big/649551-1662731240.jpg',
+        ),
+      ];
+    }
+    // Joueurs pour Norwich City
+    else if (teamId == 343) {
+      return [
+        Player(
+          id: 3431,
+          name: 'Josh Sargent',
+          position: 'Attaquant',
+          dateOfBirth: '2000-02-20',
+          nationality: 'États-Unis',
+          shirtNumber: 24,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p223340.png',
+        ),
+        Player(
+          id: 3432,
+          name: 'Gabriel Sara',
+          position: 'Milieu',
+          dateOfBirth: '1999-05-27',
+          nationality: 'Brésil',
+          shirtNumber: 17,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p490097.png',
+        ),
+        Player(
+          id: 3433,
+          name: 'Angus Gunn',
+          position: 'Gardien',
+          dateOfBirth: '1996-01-22',
+          nationality: 'Écosse',
+          shirtNumber: 1,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p171287.png',
+        ),
+      ];
+    }
+    // Joueurs pour Leeds United
+    else if (teamId == 341) {
+      return [
+        Player(
+          id: 3411,
+          name: 'Patrick Bamford',
+          position: 'Attaquant',
+          dateOfBirth: '1993-09-05',
+          nationality: 'Angleterre',
+          shirtNumber: 9,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p106617.png',
+        ),
+        Player(
+          id: 3412,
+          name: 'Crysencio Summerville',
+          position: 'Ailier',
+          dateOfBirth: '2001-10-30',
+          nationality: 'Pays-Bas',
+          shirtNumber: 10,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p461321.png',
+        ),
+        Player(
+          id: 3413,
+          name: 'Illan Meslier',
+          position: 'Gardien',
+          dateOfBirth: '2000-03-02',
+          nationality: 'France',
+          shirtNumber: 1,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p432735.png',
+        ),
+      ];
+    }
+    // Joueurs pour Sheffield United
+    else if (teamId == 356) {
+      return [
+        Player(
+          id: 3561,
+          name: 'Oli McBurnie',
+          position: 'Attaquant',
+          dateOfBirth: '1996-05-04',
+          nationality: 'Écosse',
+          shirtNumber: 9,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p180974.png',
+        ),
+        Player(
+          id: 3562,
+          name: 'John Egan',
+          position: 'Défenseur',
+          dateOfBirth: '1992-10-20',
+          nationality: 'Irlande',
+          shirtNumber: 12,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p122074.png',
+        ),
+        Player(
+          id: 3563,
+          name: 'Wes Foderingham',
+          position: 'Gardien',
+          dateOfBirth: '1991-01-14',
+          nationality: 'Angleterre',
+          shirtNumber: 1,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p78830.png',
+        ),
+      ];
+    }
+    // Joueurs pour Middlesbrough
+    else if (teamId == 384) {
+      return [
+        Player(
+          id: 3841,
+          name: 'Emmanuel Latte Lath',
+          position: 'Attaquant',
+          dateOfBirth: '1999-01-09',
+          nationality: 'Côte d\'Ivoire',
+          shirtNumber: 9,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p437742.png',
+        ),
+        Player(
+          id: 3842,
+          name: 'Hayden Hackney',
+          position: 'Milieu',
+          dateOfBirth: '2002-06-21',
+          nationality: 'Angleterre',
+          shirtNumber: 16,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p450542.png',
+        ),
+        Player(
+          id: 3843,
+          name: 'Seny Dieng',
+          position: 'Gardien',
+          dateOfBirth: '1994-11-23',
+          nationality: 'Sénégal',
+          shirtNumber: 1,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p215413.png',
+        ),
+      ];
+    }
+    // Joueurs pour Bristol City
+    else if (teamId == 387) {
+      return [
+        Player(
+          id: 3871,
+          name: 'Tommy Conway',
+          position: 'Attaquant',
+          dateOfBirth: '2002-07-15',
+          nationality: 'Écosse',
+          shirtNumber: 9,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p449988.png',
+        ),
+        Player(
+          id: 3872,
+          name: 'Jason Knight',
+          position: 'Milieu',
+          dateOfBirth: '2001-02-13',
+          nationality: 'Irlande',
+          shirtNumber: 14,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p232119.png',
+        ),
+        Player(
+          id: 3873,
+          name: 'Max O\'Leary',
+          position: 'Gardien',
+          dateOfBirth: '1996-11-10',
+          nationality: 'Irlande',
+          shirtNumber: 25,
+          teamId: teamId,
+          teamName: teamName,
+          imageUrl: 'https://resources.premierleague.com/premierleague/photos/players/250x250/p215711.png',
         ),
       ];
     }
