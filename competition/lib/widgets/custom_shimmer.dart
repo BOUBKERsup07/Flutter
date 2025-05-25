@@ -82,16 +82,27 @@ class ShimmerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        return isTeamList 
-            ? const ShimmerTeamItem() 
-            : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: CustomShimmer.rectangular(height: 100),
-              );
-      },
+    // Utiliser un widget de contrainte pour éviter le débordement
+    return Container(
+      // Utiliser une contrainte qui s'adapte à l'espace disponible
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
+      child: ListView.builder(
+        // Permettre le défilement
+        physics: const AlwaysScrollableScrollPhysics(),
+        // Limiter le nombre d'éléments pour éviter les performances lentes
+        itemCount: itemCount,
+        // Construire chaque élément de la liste
+        itemBuilder: (context, index) {
+          return isTeamList 
+              ? const ShimmerTeamItem() 
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: CustomShimmer.rectangular(height: 100),
+                );
+        },
+      ),
     );
   }
 }

@@ -359,24 +359,30 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                     if (competitions.isEmpty) {
                       return _buildEmptyResults('Aucune compétition trouvée');
                     }
-                    return ListView.builder(
-                      controller: _scrollController,
-                      itemCount: competitions.length,
-                      itemBuilder: (context, index) {
-                        return CompetitionItem(
-                          competition: competitions[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CompetitionDetailsScreen(
-                                  competitionId: competitions[index].id,
+                    return Container(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.7,
+                      ),
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: competitions.length,
+                        itemBuilder: (context, index) {
+                          return CompetitionItem(
+                            competition: competitions[index],
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CompetitionDetailsScreen(
+                                    competitionId: competitions[index].id,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                              );
+                            },
+                          );
+                        },
+                      ),
                     );
                     
                   case SearchType.team:
@@ -384,24 +390,30 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                     if (teams.isEmpty) {
                       return _buildEmptyResults('Aucune équipe trouvée');
                     }
-                    return ListView.builder(
-                      controller: _scrollController,
-                      itemCount: teams.length,
-                      itemBuilder: (context, index) {
-                        return TeamItem(
-                          team: teams[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TeamDetailsScreen(
-                                  teamId: teams[index].id,
+                    return Container(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.7,
+                      ),
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: teams.length,
+                        itemBuilder: (context, index) {
+                          return TeamItem(
+                            team: teams[index],
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TeamDetailsScreen(
+                                    teamId: teams[index].id,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                              );
+                            },
+                          );
+                        },
+                      ),
                     );
                     
                   case SearchType.player:
@@ -409,25 +421,31 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                     if (players.isEmpty) {
                       return _buildEmptyResults('Aucun joueur trouvé');
                     }
-                    return ListView.builder(
-                      controller: _scrollController,
-                      itemCount: players.length,
-                      itemBuilder: (context, index) {
-                        return PlayerItem(
-                          player: players[index],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PlayerDetailsScreen(
-                                  playerId: players[index].id,
-                                  player: players[index],
+                    return Container(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.7,
+                      ),
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: players.length,
+                        itemBuilder: (context, index) {
+                          return PlayerItem(
+                            player: players[index],
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PlayerDetailsScreen(
+                                    playerId: players[index].id,
+                                    player: players[index],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                              );
+                            },
+                          );
+                        },
+                      ),
                     );
                 }
               },
