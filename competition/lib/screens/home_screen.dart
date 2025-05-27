@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: AppTheme.backgroundColor,
+        backgroundColor: AppTheme.backgroundLightColor,
         selectedItemColor: AppTheme.primaryColor,
         unselectedItemColor: AppTheme.textSecondaryColor,
         selectedLabelStyle: const TextStyle(

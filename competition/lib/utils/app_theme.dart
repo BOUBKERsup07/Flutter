@@ -29,10 +29,7 @@ class AppTheme {
   
   // Background colors
   static const Color backgroundColor = Color(0xFFFAFAFA);
-  
-  // Constante supplémentaire pour la cohérence
-  static const double radiusMD = 12.0;
-  static const double radiusLG = 20.0;
+  static const Color backgroundLightColor = Color(0xFFFFFFFF);
   static const Color cardColor = Colors.white;
   static const Color scaffoldBackgroundColor = Color(0xFFF9FAFB);
   static const Color surfaceColor = Color(0xFFFFFFFF);
@@ -238,6 +235,8 @@ class AppTheme {
   static const double radiusL = 16.0;
   static const double radiusXL = 24.0;
   static const double radiusXXL = 32.0;
+  static const double radiusMD = 12.0;
+  static const double radiusLG = 16.0;
   
   // Shadow utilities
   static List<BoxShadow> get cardShadow => [
