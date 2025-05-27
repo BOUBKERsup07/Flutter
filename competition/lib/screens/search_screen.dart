@@ -163,6 +163,9 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
       child: _showRecentSearches
           ? Container(
               color: Colors.white,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.4,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,10 +198,11 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                       child: Text('Aucune recherche récente'),
                     )
                   else
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _recentSearches.length,
+                    Flexible(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: _recentSearches.length,
                       separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey[300]),
                       itemBuilder: (context, index) {
                         return ListTile(
@@ -218,6 +222,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                           },
                         );
                       },
+                      ),
                     ),
                 ],
               ),
@@ -259,37 +264,41 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
 
   // Méthode pour construire l'indicateur de chargement
   Widget _buildLoadingIndicator() {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        ShimmerList(
-          isTeamList: Provider.of<SearchProvider>(context, listen: false).currentSearchType == SearchType.team,
-        ),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          ShimmerList(
+            isTeamList: Provider.of<SearchProvider>(context, listen: false).currentSearchType == SearchType.team,
+          ),
+        ],
+      ),
     );
   }
 
   // Méthode pour construire le message d'erreur
   Widget _buildErrorMessage(String message) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: const TextStyle(color: Colors.red),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              Provider.of<SearchProvider>(context, listen: false).loadInitialData();
-            },
-            child: const Text('Réessayer'),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: TextStyle(color: Colors.grey[700]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Provider.of<SearchProvider>(context, listen: false).loadInitialData();
+              },
+              child: const Text('Réessayer'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -297,27 +306,29 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
   // Méthode pour construire le message "Aucun résultat trouvé"
   Widget _buildEmptyResults(String message) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.search_off, size: 48, color: Colors.grey),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: TextStyle(color: Colors.grey[700]),
-            textAlign: TextAlign.center,
-          ),
-          if (_searchController.text.isNotEmpty) ...[  
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off, size: 48, color: Colors.grey),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                _searchController.clear();
-                _performSearch();
-              },
-              child: const Text('Effacer la recherche'),
+            Text(
+              message,
+              style: TextStyle(color: Colors.grey[700]),
+              textAlign: TextAlign.center,
             ),
+            if (_searchController.text.isNotEmpty) ...[  
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  _searchController.clear();
+                  _performSearch();
+                },
+                child: const Text('Effacer la recherche'),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -329,19 +340,20 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
         title: const Text('Recherche Sportive'),
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          // Champ de recherche amélioré
-          _buildSearchField(),
-          
-          // Filtres de recherche
-          const SearchFilter(),
-          
-          // Liste des recherches récentes (visible uniquement lorsque le champ a le focus)
-          _buildRecentSearchesList(),
-          
-          // Résultats
-          Expanded(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Champ de recherche amélioré
+            _buildSearchField(),
+            
+            // Filtres de recherche
+            const SearchFilter(),
+            
+            // Liste des recherches récentes (visible uniquement lorsque le champ a le focus)
+            _buildRecentSearchesList(),
+            
+            // Résultats
+            Expanded(
             child: Consumer<SearchProvider>(
               builder: (context, searchProvider, child) {
                 if (searchProvider.isLoading) {
@@ -359,11 +371,7 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                     if (competitions.isEmpty) {
                       return _buildEmptyResults('Aucune compétition trouvée');
                     }
-                    return Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.7,
-                      ),
-                      child: ListView.builder(
+                    return ListView.builder(
                         controller: _scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: competitions.length,
@@ -382,19 +390,14 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                             },
                           );
                         },
-                      ),
-                    );
+                      );
                     
                   case SearchType.team:
                     final teams = searchProvider.teams;
                     if (teams.isEmpty) {
                       return _buildEmptyResults('Aucune équipe trouvée');
                     }
-                    return Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.7,
-                      ),
-                      child: ListView.builder(
+                    return ListView.builder(
                         controller: _scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: teams.length,
@@ -413,19 +416,14 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                             },
                           );
                         },
-                      ),
-                    );
+                      );
                     
                   case SearchType.player:
                     final players = searchProvider.players;
                     if (players.isEmpty) {
                       return _buildEmptyResults('Aucun joueur trouvé');
                     }
-                    return Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.7,
-                      ),
-                      child: ListView.builder(
+                    return ListView.builder(
                         controller: _scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: players.length,
@@ -445,14 +443,15 @@ class _SearchScreenState extends State<SearchScreen> with SingleTickerProviderSt
                             },
                           );
                         },
-                      ),
-                    );
+                      );
                 }
+                return const SizedBox.shrink(); // Cas par défaut
               },
             ),
           ),
         ],
       ),
+    ),
     );
   }
 }
